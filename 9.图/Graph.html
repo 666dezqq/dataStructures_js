@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图结构的封装</title>
+    <script src="../2.队列/Queue.js"></script>
+</head>
+
+<body>
+    <script>
+        //封装一个字典，用来存储边(其实直接用ES6自带的Map就行)
+        //如果js执行上下文中自己封装了Map，优先调用的是自己的
+        class Map {
+            constructor() {
+                //字典使用对象存储，因为元素不能重复（对象中属性不能重复）
+                this.items = {};
+            }
+
+            //向字典添加一个新的项
+            set(key, value) {
+                //先判断有没有这个属性，有的话就不添加
+                if (this.has(key)) return false;
+                //使用[]的方式添加属性，这样属性名就和value一样
+                this.items[key] = value;
+                return true;
+            }
+
+            //取字典中某个键对应的值
+            get(key) {
+                //先判断有没有这个属性，没有的话就false
+                if (!this.has(key)) return false;
+                return this.items[key];
+            }
+
+            //检测字典(对象)中是否有这个属性
+            has(key) {
+                return this.items.hasOwnProperty(key);
+            }
+
+            //删除某个元素
+            remove(key) {
+                if (!this.has(key)) return false;
+                delete this.items[key];
+            }
+
+            //移除字典中所有项
+            clear() {
+                this.items = {};
+            }
+
+            //返回字典的长度
+            size() {
+                return Object.keys(this.items).length;
+            }
+
+            //获取字典中所有的值
+            getValues() {
+                return Object.values(this.items);
+            }
+        }
+
+        //封装一个图结构，其中要设置两个属性
+        //vertexes存储顶点有哪些
+        //edges存储的是顶点和边集合的键值对
+        class Graph {
+            constructor() {
+                this.vertexes = []; //存储顶点
+                this.edges = new Map(); //存储顶点和边的对应关系
+            }
+
+            //添加顶点
+            addVertex(v) {
+                this.vertexes.push(v);
+                //添加顶点的同时要初始化存储顶点对应边的数据结构
+                this.edges.set(v, []); //这里使用数组存储边
+            }
+
+            //添加边(无向边，需要互相指一下)
+            addEdge(v1, v2) {
+                this.edges.get(v1).push(v2);
+                this.edges.get(v2).push(v1);
+            }
+
+            //转字符串
+            toString() {
+                let result = '';
+                for (let i = 0; i < this.vertexes.length; i++) {
+                    let vertex = this.vertexes[i];
+                    result += vertex + ' => ';
+                    let vLinks = this.edges.get(vertex);//拿到连接的顶点们
+                    for (let i = 0; i < vLinks.length; i++) {
+                        let edge = vLinks[i];
+                        result += edge + ' ';
+                    }
+                    result += '\n';
+                }
+                return result;
+            }
+
+            //用颜色作为是否已访问节点的标识
+            //white:未入队, grey:在队列, black:已出队
+            //初始化节点颜色的代码
+            initializeColor() {
+                let colors = [];
+                for (let i = 0; i < this.vertexes.length; i++) {
+                    //全部初始化为白色（未访问）
+                    colors[this.vertexes[i]] = 'white';
+                }
+                return colors;
+            }
+
+            //广度优先遍历(利用队列实现),需要传入开始的顶点
+            bfs(initV) {
+                //1.初始化颜色
+                let colors = this.initializeColor();
+                //2.声明一个队列，开始顶点先入队
+                let queue = new Queue();
+                queue.enqueue(initV);
+                //3.开始遍历，只要队列不为空就继续遍历
+                while (!queue.isEmpty()) {
+                    //3.1从队头取出一个顶点
+                    let front = queue.dequeue();
+                    colors[front] = 'black';
+                    console.log(front);
+                    //3.2出队的顶点的连接顶点依次入队,同时更改颜色
+                    let vLinks = this.edges.get(front);
+                    for (let i = 0; i < vLinks.length; i++) {
+                        //这里一定要判断是否已经入队，不然会陷入死循环
+                        if (colors[vLinks[i]] == 'white') {
+                            queue.enqueue(vLinks[i]);
+                            colors[vLinks[i]] = 'grey';
+                        }
+                    }
+                }
+            }
+
+            //深度优先遍历（利用递归实现）
+            dfs(initV) {
+                //1.把所有的顶点初始化为白色
+                let colors = this.initializeColor();
+                //2.遍历顶点
+                this.dfsRecursion(initV, colors);
+            }
+
+            //递归函数
+            dfsRecursion(initV, colors) {
+                console.log(initV); //访问并输出
+                colors[initV] = 'black'; //遍历完改为黑色
+                let vLinks = this.edges.get(initV); //拿到邻居
+                for (let i = 0; i < vLinks.length; i++) {
+                    if (colors[vLinks[i]] == 'white') {
+                        this.dfsRecursion(vLinks[i],colors);
+                    }
+                }
+            }
+        }
+
+        //测试代码
+        let graph = new Graph();
+        let myVertexes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+        //这里最好循环添加，因为我们除了添加顶点之外，还要初始化顶点对应的边数组
+        for (let i = 0; i < myVertexes.length; i++) {
+            graph.addVertex(myVertexes[i]);
+        }
+
+        //3.添加边
+        graph.addEdge('A', 'B')
+        graph.addEdge('A', 'C')
+        graph.addEdge('A', 'D')
+        graph.addEdge('C', 'D')
+        graph.addEdge('C', 'G')
+        graph.addEdge('D', 'G')
+        graph.addEdge('D', 'H')
+        graph.addEdge('B', 'E')
+        graph.addEdge('B', 'F')
+        graph.addEdge('E', 'I')
+
+        //4.输出结果
+        console.log(graph.toString());
+
+        //5.测试遍历
+        graph.bfs(graph.vertexes[0]);
+        console.log('-----------------------------')
+        graph.dfs(graph.vertexes[0]);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>封装二叉搜索树</title>
+</head>
+
+<body>
+    <script>
+        //二叉树节点类
+        class Node {
+            constructor(key) {
+                this.key = key;
+                this.left = null;
+                this.right = null;
+            }
+        }
+
+        //封装一个二叉搜索树
+        class BinarySearchTree {
+            constructor() {
+                this.root = null;
+            }
+
+            //1.1插入数据
+            insert(key) {
+                //1.先生成新的节点
+                let newNode = new Node(key);
+                //2.判断有没有根节点
+                if(this.root == null) {
+                    //2.1如果没有根节点，那么当前插入的就是根节点
+                    this.root = newNode;
+                }else {
+                    //2.2如果有根节点，就调用递归函数
+                    this.insertRecursion(this.root, newNode);
+                }
+            }
+
+            //1.2插入操作的递归函数（依次向下查找）
+            insertRecursion(current, newNode) {
+                //1.看一下要往哪边查找
+                if(newNode.key < current.key){
+                    //2.1向左查找
+                    if(current.left == null) {
+                        //3.1如果左节点为空，那么就直接插入
+                        current.left = newNode;
+                    }else {
+                        //3.2如果左节点不为空，就递归调用，直到一直到叶子节点
+                        this.insertRecursion(current.left, newNode);
+                    }
+                } else {
+                    //2.2向右查找，同理
+                    if(current.right == null) {
+                        current.right = newNode;
+                    } else {
+                        this.insertRecursion(current.right, newNode);
+                    }
+                }
+            }
+
+            //2.1前序遍历的递归函数
+            preOrderRecursion(node) {
+                if(node == null) return false;
+                console.log(node.key);
+                this.preOrderRecursion(node.left);
+                //递归完成后调用的是上一个栈顶函数的下一个过程，所以来到了node.right
+                this.preOrderRecursion(node.right);
+            }
+            //2.2前序遍历
+            preOrderTraversal() {
+                this.preOrderRecursion(this.root);
+            }
+
+            //3.1中序遍历的递归函数
+            inOrderRecursion(node) {
+                if(node == null) return false;
+                this.inOrderRecursion(node.left);
+                console.log(node.key);
+                //递归完成后调用的是上一个栈顶函数的下一个过程，所以来到了node.right
+                this.inOrderRecursion(node.right);
+            }
+            //3.2中序遍历
+            inOrderTraversal() {
+                this.inOrderRecursion(this.root);
+            }
+
+            //3.1后序遍历的递归函数
+            afterOrderRecursion(node) {
+                if(node == null) return false;
+                this.afterOrderRecursion(node.left);
+                //递归完成后调用的是上一个栈顶函数的下一个过程，所以来到了node.right
+                this.afterOrderRecursion(node.right);
+                console.log(node.key);
+            }
+            //3.2后序遍历
+            afterOrderTraversal(node) {
+                this.afterOrderRecursion(this.root);
+            }
+
+            //4.寻找最小值
+            min() {
+                let current = this.root; 
+                while(current != null && current.left != null) {
+                    current = current.left;
+                }
+                if(current != null) return current.key;
+            }
+
+            //5.寻找最大值
+            max() {
+                let current = this.root; 
+                while(current != null && current.right != null) {
+                    current = current.right;
+                }
+                if(current != null) return current.key;
+            }
+
+            //6.寻找特定值(有返回true，没有返回false)
+            search(key) {
+                let current = this.root;
+                //二分查找原则
+                while(current != null) {
+                    if(key < current.key) {
+                        //向左查找
+                        current = current.left;
+                    }else if(key > current.key) {
+                        //向右查找
+                        current = current.right;
+                    }else {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            //7.删除某个节点（难点）
+            remove(key) {
+                //一.寻找要删除的节点
+                //1.1定义变量保存父节点和左右子树的标识
+                let current = this.root;
+                let parent = null; //定义节点的父节点
+                let isLeftChild = true; //左右子树的标识
+                if(current == null) return false;//根节点为空直接return
+                //1.2寻找删除的节点
+                while(current.key != key) {
+                    parent = current;
+                    if(key < current.key) {
+                        current = current.left;
+                        isLeftChild = true;
+                    } else {
+                        current = current.right;
+                        isLeftChild = false;
+                    } 
+                }
+                //1.3如果找到最后还是没有，那么就无法删除
+                if(current == null) return false;
+
+                //二.已经找到current，根据不同的情况进行删除
+                //(1)情况一：删除的节点没有子节点
+                if(current.left == null && current.right == null) {
+                    //1.如果是根节点
+                    if(current == this.root) {
+                        this.root = null;
+                    }
+                    //2.如果不是根节点
+                    else if(isLeftChild) {
+                        //2.1如果是左子树
+                        parent.left = null;
+                    } else {
+                        //2.2如果是右子树
+                        parent.right = null;
+                    }
+                }
+                //(2)情况二：删除的节点只有一个子节点
+                //1.如果删除的节点只有左子节点
+                else if(current.right == null) {
+                    //别忘了，如果只有一个根节点带一个子节点呢？
+                    if(current == this.root) {
+                        this.root = current.left;
+                    }
+                    else if(isLeftChild) {
+                        //如果删除的节点是父节点的左子节点
+                        parent.left = current.left;
+                    } else {
+                        //如果删除的节点是父节点的右子节点
+                        parent.right = current.left;
+                    }
+                }
+                //2.如果删除的节点只有右子节点
+                else if(current.left == null) {
+                    if(current == this.root) {
+                        this.root = current.right;
+                    }
+                    else if(isLeftChild) {
+                        //如果删除的节点是父节点的左子节点
+                        parent.left = current.right;
+                    } else {
+                        //如果删除的节点是父节点的右子节点
+                        parent.right = current.right;
+                    }
+                }
+
+                //(3)情况三：删除的节点有两个子节点（复杂）
+                else {
+                    //1.找到后继节点
+                    let successor = this.getSuccessor(current);
+                    //2.处理删除节点的上面（父）节点的指针指向
+                    if(current == this.root) {
+                        this.root = successor;
+                    }else if(isLeftChild) {
+                        parent.left = successor;
+                    }else {
+                        parent.right = successor;
+                    }
+                    //3.将后继的左子节点改为删除的左子节点
+                    successor.left = current.left;
+                }
+            }
+
+            //7.1找到情况三的后继节点（右子树最小值）
+            getSuccessor(delNode) {
+                //这个函数主要处理的是删除节点下面的节点
+                let successor = delNode;
+                let current = delNode.right;//从右子节点开始查找
+                let successorParent = delNode;
+                while(current != null) {
+                    successorParent = successor; //保存后继节点的父节点(原地不动)
+                    successor = current; //保存后继节点（向下挪一步）
+                    current = current.left; //保存遍历的指针（向左挪一步）
+                }
+
+                //循环结束，说明找到了右子树的最小值所在节点
+                //此时还要进行判断:
+                //1.如果后继节点是第一个右子节点,那么指针的更改去另一个函数中完成
+                //2.如果不是，那么就要改前后节点的指向，这块儿真tm绕
+                if(successor != delNode.right) {
+                    successorParent.left = successor.right; //后继节点只可能有右子节点
+                    successor.right = delNode.right;
+                }
+                return successor;
+            }
+        }
+
+        //测试代码
+        let bst = new BinarySearchTree();
+        bst.insert(11);
+        bst.insert(7);
+        bst.insert(15);
+        bst.insert(5);
+        bst.insert(9);
+        //测试最小值
+        console.log(bst.min());
+        //测试最大值
+        console.log(bst.max());
+        console.log(bst);
+        bst.preOrderTraversal();
+        console.log('-----------------------------')
+        bst.inOrderTraversal();
+        console.log('-----------------------------')
+        bst.afterOrderTraversal();
+
+        console.log('-----------------------------')
+        //先搞清楚递归和函数调用栈
+        function f(n) {
+            console.log(n+' 入栈');
+            if(n==0) return 0;
+            f(n-1);
+            console.log(n+' 出栈');
+        }
+        f(3);
+    </script>
+</body>
+
+</html>

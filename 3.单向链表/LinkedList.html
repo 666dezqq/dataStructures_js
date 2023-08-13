@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单向链表</title>
+</head>
+
+<body>
+    <script>
+        //定义一个节点类，用来声明新的节点
+        class Node {
+            constructor(data) {
+                this.data = data; //数据
+                this.next = null; //指针
+            }
+        }
+
+        //封装一个单向链表
+        class LinkedList {
+            constructor() {
+                this.head = null;
+                this.length = 0;
+            }
+
+            //将元素插入链表尾部的方法
+            append(data) {
+                //1.声明一个新的节点
+                let newNode = new Node(data);
+                if (this.length == 0) {
+                    //2.1如果链表为空，那么head直接指向第一个节点
+                    this.head = newNode;
+                } else {
+                    //2.2如果链表不为空，那么循环遍历，直到指针指向最后一个节点
+                    let current = this.head;
+                    while (current.next) {
+                        current = current.next;
+                    }
+                    current.next = newNode;
+                }
+                //3.添加完之后length+1
+                this.length++;
+            }
+
+            //转字符串的方法
+            toString() {
+                let result = '';
+                let current = this.head;
+                while (current) {
+                    result += current.data + ' '; //如果有就拼接
+                    current = current.next; //指针指向后面的元素
+                }
+
+                return result;
+            }
+
+            //任意位置插入元素
+            insert(position, data) {
+                //1.对position进行越界判断
+                //position==this.length说明是往最后插，如果比它大就不行了
+                if (position < 0 || position > this.length) return false;
+                //2.生成新节点
+                let newNode = new Node(data);
+                //3.对position的不同情况进行判断
+                //3.1如果插入的位置是第一个（position=0）
+                if (position === 0) {
+                    newNode.next = this.head; //先保存原来的第一个元素
+                    this.head = newNode; //再把新节点给head
+                    //注意：上面这两步顺序不能反，不然就找不到原来的第一个元素了
+                } else {
+                    //如果是往其他位置插入元素
+                    let current = this.head;  //拿到第一个元素
+                    let previous = null; //声明变量存储position前边的元素
+                    for (let i = 0; i < position; i++) {
+                        previous = current; //保存上一个位置
+                        current = current.next;  //保存当前位置
+                    }
+                    //循环结束后current已经是position位置的元素
+                    newNode.next = current; //让新节点指向当前位置节点（挤到后边去）
+                    previous.next = newNode; //让前一个节点指向新节点
+                }
+
+                //4.长度加1
+                this.length++;
+                return true;
+            }
+
+            //获取某个位置的元素
+            get(position) {
+                //1.越界判断,如果获取最后一个位置后面，那么是没有滴，所以是>=length
+                if (position < 0 || position >= this.length) return false;
+                //2.从头往后找，直到找到该位置元素
+                let current = this.head;
+                for (let i = 0; i < position; i++) {
+                    current = current.next;
+                }
+                return current;
+            }
+
+            //根据元素数据获取该元素位置，若不存在返回-1
+            indexOf(data) {
+                let current = this.head;
+                let index = 0; //定义一个索引
+                //从头开始一个一个对比，如果相等了就返回index的值
+                while(current) {
+                    if(current.data == data) {
+                        return index;
+                    }else {
+                        //当前节点不是我要找到节点，那么就往后指
+                        current = current.next;
+                        index++;
+                    }
+                }
+                //如果所有都对比完了都没找到，说明没有，就返回-1
+                return -1;
+            }
+
+            //更新某个位置的元素值
+            update(position, data) {
+                //1.越界判断,positon==length是刚好在最后一个元素的后面那个空位
+                if(position < 0 || position >= this.length ) return false;
+                //2.拿到这个位置节点
+                let current = this.head;
+                let index = 0;
+                while(index++ < position) {
+                    current = current.next;
+                }
+                //3.修改当前节点的元素值
+                current.data = data;
+                return current;
+            }
+
+            //删除指定位置的节点
+            removeAt(position) {
+                //1.越界判断
+                if(position < 0 || position >= this.length) return false;
+                let current = this.head;
+                //2.1如果删除的是第一个节点,前边没东西，只有head
+                if(position == 0) {
+                    this.head = current.next;
+                }else {
+                    //2.2如果删除的是其他位置的节点
+                    let index = 0;
+                    let previous = null;
+                    //2.2.1先找到前边的节点，删除节点，后边的节点
+                    while(index++ < position) {
+                        previous = current;
+                        current = current.next;
+                    }
+                    //2.2.2将前边的节点指向后边的节点
+                    previous.next = current.next;
+                }
+                //3.长度-1
+                this.length--;
+                //4.返回被删除的元素
+                return current;
+            }
+
+            //删除指定data所在的节点
+            remove(data) {
+                //1.先找到data所在的位置
+                let index = this.indexOf(data);
+                //2.删除该位置的元素
+                return this.removeAt(index);
+            }
+
+            //判断链表是否为空
+            isEmpty() {
+                return this.length == 0;
+            }
+
+            //判断链表的长度
+            size() {
+                return this.length;
+            }
+        }
+
+        let list = new LinkedList();
+        //1.测试尾部插入
+        list.append('abc');
+        list.append('zqq');
+        list.append('元素');
+        console.log(list.toString()); //abc zqq 元素
+        //2.测试任意位置插入
+        list.insert(2, 'hm');
+        console.log(list.toString()); //abc zqq hm 元素
+        //3.测试获取某个元素索引
+        console.log(list.indexOf('zqq')); //1
+        //4.测试获取某个位置元素 
+        console.log(list.get(2)); //Node {data: 'hm', next: Node}
+        //5.测试修改元素
+        list.update(2, '修改元素');  
+        console.log(list.toString()); //abc zqq 修改元素 元素
+        //6.测试删除指定位置元素
+        list.removeAt(2);
+        console.log(list.toString()); //abc zqq 元素 
+        //7.测试删除指定data的元素
+        list.remove('元素');
+        console.log(list.toString()); //abc zqq
+        //8.测试是否为空和输出长度
+        console.log(list.isEmpty()); //false
+        console.log(list.size()); //2
+    </script>
+</body>
+
+</html>

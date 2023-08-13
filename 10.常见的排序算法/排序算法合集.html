@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常见的排序算法</title>
+</head>
+
+<body>
+    <script>
+        class ArrayList {
+            constructor() {
+                this.arr = []
+            }
+
+            insert(element) {
+                return this.arr.push(element);
+            }
+
+            toString() {
+                return this.arr.join(' ');
+            }
+
+            //1.冒泡排序
+            bubbleSort() {
+                for (let j = this.arr.length - 1; j > 0; j--) {
+                    for (let i = 0; i < j; i++) {
+                        if (this.arr[i] > this.arr[i + 1]) {
+                            let zqq = this.arr[i + 1];
+                            this.arr[i + 1] = this.arr[i];
+                            this.arr[i] = zqq;
+                        }
+                    }
+                }
+                return this.arr
+            }
+
+            //2.选择排序
+            selectionSort() {
+                //外层循环控制走几趟，每一趟开始的位置+1
+                for (let j = 0; j < this.arr.length - 1; j++) {
+                    //内层循环依次向后比较
+                    let minIndex = j;
+                    for (let i = minIndex + 1; i < this.arr.length; i++) {
+                        if (this.arr[i] < this.arr[minIndex]) {
+                            minIndex = i;
+                        }
+                    }
+                    //交换两个位置元素
+                    let temp = this.arr[minIndex];
+                    this.arr[minIndex] = this.arr[j];
+                    this.arr[j] = temp;
+                }
+                return this.arr;
+            }
+
+            //3.插入排序
+            insertionSort() {
+                //外层循环，从第一个位置开始获取数据。
+                for (let j = 1; j < this.arr.length; j++) {
+                    //内层循环，从当前位置依次向前比较
+                    for (let i = j - 1; i >= 0; i--) {
+                        if (this.arr[i] > this.arr[j]) {
+                            //交换位置
+                            let temp = this.arr[j]; //保存当前数据
+                            this.arr[j] = this.arr[i];
+                            this.arr[i] = temp;
+                            j--; //j往前挪
+                        } else {
+                            break; //如果比前边的数大，就退出整个循环
+                        }
+                    }
+                }
+                return this.arr;
+            }
+        }
+
+        let list = new ArrayList();
+        list.insert(4);
+        list.insert(5);
+        list.insert(2);
+        list.insert(1);
+        list.insert(3);
+        console.log(list.toString());
+        console.log(list.bubbleSort());
+        console.log(list.selectionSort());
+        console.log(list.insertionSort());
+    </script>
+</body>
+
+</html>
